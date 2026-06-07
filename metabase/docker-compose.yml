@@ -1,0 +1,49 @@
+# Self-hosted Metabase, containerized.
+# Best-practice note: Metabase stores its OWN metadata (dashboards, users,
+# question definitions) in a database. The default is an in-container H2 file
+# that is easy to lose. We back it with a real Postgres container + a named
+# volume so your dashboards survive container restarts and image upgrades.
+#
+# Usage:
+#   cp .env.example .env       # then edit MB_DB_PASS
+#   docker compose up -d
+#   open http://localhost:3000
+#
+# To connect Metabase to BigQuery, use the bi-metabase service-account key
+# you created (README step D) and upload it in the Metabase UI:
+#   Admin settings -> Databases -> Add database -> BigQuery
+#   Project ID: emerald-energy-483903-f3
+#   Service account JSON: upload bi-metabase-key.json
+#   Datasets: only 'reporting' (keep the BI tool scoped to the serving layer)
+
+services:
+  metabase-db:
+    image: postgres:16
+    container_name: metabase-db
+    environment:
+      POSTGRES_DB: metabase
+      POSTGRES_USER: metabase
+      POSTGRES_PASSWORD: ${MB_DB_PASS:?set MB_DB_PASS in .env}
+    volumes:
+      - metabase-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    depends_on:
+      - metabase-db
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: metabase
+      MB_DB_PASS: ${MB_DB_PASS:?set MB_DB_PASS in .env}
+      MB_DB_HOST: metabase-db
+      JAVA_TIMEZONE: UTC
+    restart: unless-stopped
+
+volumes:
+  metabase-db-data:

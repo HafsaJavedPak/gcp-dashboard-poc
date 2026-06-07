@@ -1,0 +1,9 @@
+# Secrets — never commit
+*.json.key
+*-key.json
+bi-metabase-key.json
+metabase/.env
+.env
+
+# OS
+.DS_Store
