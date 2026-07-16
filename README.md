@@ -39,7 +39,7 @@ gcp-dashboard-poc/
 └── docs/VALIDATION.md
 ```
 
-# Docummentation of Project Workingalkthrough + interview prep
+# Docummentation of Project Working
 
 
 ## Table of contents
